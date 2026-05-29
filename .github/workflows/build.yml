@@ -25,7 +25,7 @@ jobs:
       run: nuget restore WatermarkApp.csproj
 
     - name: Build Release
-      run: msbuild WatermarkApp.csproj /p:Configuration=Release /p:Platform="Any CPU"
+      run: msbuild WatermarkApp.csproj /p:Configuration=Release /p:Platform=AnyCPU
 
     - name: Create output directory
       run: mkdir -p output
