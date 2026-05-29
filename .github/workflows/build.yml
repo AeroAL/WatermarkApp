@@ -3,9 +3,6 @@ name: Build WatermarkApp
 on:
   push:
     branches: [ main, master ]
-    paths:
-      - 'WatermarkApp/**'
-      - '.github/workflows/build.yml'
   pull_request:
     branches: [ main, master ]
   workflow_dispatch:  # 允许手动触发
@@ -25,17 +22,17 @@ jobs:
       uses: NuGet/setup-nuget@v1
 
     - name: Restore NuGet packages
-      run: nuget restore WatermarkApp\WatermarkApp.csproj
+      run: nuget restore WatermarkApp.csproj
 
     - name: Build Release
-      run: msbuild WatermarkApp\WatermarkApp.csproj /p:Configuration=Release /p:Platform=AnyCPU
+      run: msbuild WatermarkApp.csproj /p:Configuration=Release /p:Platform=AnyCPU
 
     - name: Prepare installer staging
       shell: pwsh
       run: |
         New-Item -ItemType Directory -Force output | Out-Null
-        Copy-Item WatermarkApp\bin\Release\WatermarkApp.exe output\
-        Copy-Item WatermarkApp\config.ini output\
+        Copy-Item bin\Release\WatermarkApp.exe output\
+        Copy-Item config.ini output\
         Write-Host "Staging files:"
         Get-ChildItem output\
 
@@ -45,10 +42,9 @@ jobs:
     - name: Build Installer
       shell: pwsh
       run: |
-        $iss = Get-Content WatermarkApp\setup.iss -Raw
-        # 重定向源路径到 staging 目录
-        $iss = $iss -replace 'Source: "bin\\Release\\', 'Source: "output\'
-        $iss = $iss -replace 'Source: "config\.ini"', 'Source: "output\config.ini"'
+        $iss = Get-Content setup.iss -Raw
+        $iss = $iss -replace 'Source: "bin\\\\Release\\\\', 'Source: "output\\'
+        $iss = $iss -replace 'Source: "config\\.ini"', 'Source: "output\\config.ini"'
         $iss | Set-Content setup_ci.iss
 
         Write-Host "=== Modified setup.iss ==="
@@ -68,5 +64,5 @@ jobs:
       with:
         name: WatermarkApp-Portable
         path: |
-          WatermarkApp\bin\Release\WatermarkApp.exe
-          WatermarkApp\config.ini
+          bin\Release\WatermarkApp.exe
+          config.ini
