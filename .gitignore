@@ -1,0 +1,22 @@
+# Build results
+bin/
+obj/
+[Dd]ebug/
+[Rr]elease/
+*.exe
+*.dll
+*.pdb
+
+# Visual Studio
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Inno Setup
+Output/
+
+# OS files
+.DS_Store
+Thumbs.db

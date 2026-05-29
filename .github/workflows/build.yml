@@ -1,0 +1,67 @@
+name: Build WatermarkApp
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:  # 允许手动触发
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Setup MSBuild
+      uses: microsoft/setup-msbuild@v1
+
+    - name: Setup NuGet
+      uses: NuGet/setup-nuget@v1
+
+    - name: Restore NuGet packages
+      run: nuget restore WatermarkApp.csproj
+
+    - name: Build Release
+      run: msbuild WatermarkApp.csproj /p:Configuration=Release /p:Platform="Any CPU"
+
+    - name: Create output directory
+      run: mkdir -p output
+
+    - name: Copy files for installer
+      run: |
+        copy bin\Release\WatermarkApp.exe output\
+        copy config.ini output\
+
+    - name: Install Inno Setup
+      run: |
+        choco install innosetup -y
+        # 添加到 PATH
+        echo "C:\Program Files (x86)\Inno Setup 6" >> $env:GITHUB_PATH
+
+    - name: Build Installer
+      run: |
+        # 修改 setup.iss 中的源文件路径
+        $content = Get-Content setup.iss -Raw
+        $content = $content -replace 'Source: "bin\\Release\\WatermarkApp.exe"', 'Source: "output\WatermarkApp.exe"'
+        $content | Set-Content setup_modified.iss
+
+        # 编译安装包
+        ISCC.exe setup_modified.iss
+
+    - name: Upload Installer
+      uses: actions/upload-artifact@v3
+      with:
+        name: WatermarkApp-Setup
+        path: Output/WatermarkApp_Setup.exe
+        if-no-files-found: error
+
+    - name: Upload Debug Build
+      uses: actions/upload-artifact@v3
+      with:
+        name: WatermarkApp-Debug
+        path: |
+          bin/Release/WatermarkApp.exe
+          config.ini
