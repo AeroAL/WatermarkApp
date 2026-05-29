@@ -3,7 +3,7 @@
 
 [Setup]
 AppName=全屏水印程序
-AppVersion=1.0
+AppVersion=1.1
 AppPublisher=WatermarkApp
 DefaultDirName={pf}\WatermarkApp
 DefaultGroupName=全屏水印
@@ -52,9 +52,8 @@ begin
   if CurStep = ssPostInstall then
   begin
     MsgBox('安装完成！' + #13#10 + #13#10 +
-           '配置文件位置：' + ExpandConstant('{app}\config.ini') + #13#10 +
-           '默认密码：123456' + #13#10 + #13#10 +
-           '请修改配置文件中的设备位置信息。',
+           '右键系统托盘图标 → 设置 可修改设备位置、密码和开机自启。' + #13#10 +
+           '配置文件位置：' + ExpandConstant('{app}\config.ini'),
            mbInformation, MB_OK);
   end;
 end;

@@ -3,6 +3,9 @@ name: Build WatermarkApp
 on:
   push:
     branches: [ main, master ]
+    paths:
+      - 'WatermarkApp/**'
+      - '.github/workflows/build.yml'
   pull_request:
     branches: [ main, master ]
   workflow_dispatch:  # 允许手动触发
@@ -22,46 +25,48 @@ jobs:
       uses: NuGet/setup-nuget@v1
 
     - name: Restore NuGet packages
-      run: nuget restore WatermarkApp.csproj
+      run: nuget restore WatermarkApp\WatermarkApp.csproj
 
     - name: Build Release
-      run: msbuild WatermarkApp.csproj /p:Configuration=Release /p:Platform=AnyCPU
+      run: msbuild WatermarkApp\WatermarkApp.csproj /p:Configuration=Release /p:Platform=AnyCPU
 
-    - name: Create output directory
-      run: mkdir -p output
-
-    - name: Copy files for installer
+    - name: Prepare installer staging
+      shell: pwsh
       run: |
-        copy bin\Release\WatermarkApp.exe output\
-        copy config.ini output\
+        New-Item -ItemType Directory -Force output | Out-Null
+        Copy-Item WatermarkApp\bin\Release\WatermarkApp.exe output\
+        Copy-Item WatermarkApp\config.ini output\
+        Write-Host "Staging files:"
+        Get-ChildItem output\
 
     - name: Install Inno Setup
-      run: |
-        choco install innosetup -y
-        # 添加到 PATH
-        echo "C:\Program Files (x86)\Inno Setup 6" >> $env:GITHUB_PATH
+      run: choco install innosetup -y --no-progress
 
     - name: Build Installer
+      shell: pwsh
       run: |
-        # 修改 setup.iss 中的源文件路径
-        $content = Get-Content setup.iss -Raw
-        $content = $content -replace 'Source: "bin\\Release\\WatermarkApp.exe"', 'Source: "output\WatermarkApp.exe"'
-        $content | Set-Content setup_modified.iss
+        $iss = Get-Content WatermarkApp\setup.iss -Raw
+        # 重定向源路径到 staging 目录
+        $iss = $iss -replace 'Source: "bin\\Release\\', 'Source: "output\'
+        $iss = $iss -replace 'Source: "config\.ini"', 'Source: "output\config.ini"'
+        $iss | Set-Content setup_ci.iss
 
-        # 编译安装包
-        ISCC.exe setup_modified.iss
+        Write-Host "=== Modified setup.iss ==="
+        Get-Content setup_ci.iss | Select-String "Source:"
+
+        & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" setup_ci.iss
 
     - name: Upload Installer
       uses: actions/upload-artifact@v4
       with:
         name: WatermarkApp-Setup
-        path: Output/WatermarkApp_Setup.exe
+        path: Output\WatermarkApp_Setup.exe
         if-no-files-found: error
 
-    - name: Upload Debug Build
+    - name: Upload Portable Build
       uses: actions/upload-artifact@v4
       with:
-        name: WatermarkApp-Debug
+        name: WatermarkApp-Portable
         path: |
-          bin/Release/WatermarkApp.exe
-          config.ini
+          WatermarkApp\bin\Release\WatermarkApp.exe
+          WatermarkApp\config.ini

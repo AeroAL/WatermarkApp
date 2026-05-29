@@ -27,8 +27,11 @@ namespace WatermarkApp
             // 初始化配置
             ConfigManager.Initialize();
 
-            // 设置开机自启
-            AutoStartManager.EnableAutoStart();
+            // 根据配置决定开机自启（同时清理注册表残留）
+            if (ConfigManager.GetAutoStart())
+                AutoStartManager.EnableAutoStart();
+            else
+                AutoStartManager.DisableAutoStart();
 
             // 运行主程序
             Application.Run(new MainForm());

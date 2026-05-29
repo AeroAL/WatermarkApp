@@ -18,6 +18,13 @@ namespace WatermarkApp
             InitializeComponent();
         }
 
+        protected override void OnLoad(EventArgs e)
+        {
+            base.OnLoad(e);
+            // 在 OnLoad 中绑定消息文本 —— 此时调用方已设置 Message 属性
+            lblMessage.Text = Message;
+        }
+
         private void InitializeComponent()
         {
             this.Text = "密码验证";
@@ -30,7 +37,6 @@ namespace WatermarkApp
 
             // 提示信息
             lblMessage = new Label();
-            lblMessage.Text = Message;
             lblMessage.Location = new Point(20, 20);
             lblMessage.Size = new Size(300, 20);
             this.Controls.Add(lblMessage);

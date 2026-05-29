@@ -9,14 +9,17 @@ namespace WatermarkApp
         private TextBox txtLocation;
         private TextBox txtNewPassword;
         private TextBox txtConfirmPassword;
+        private CheckBox chkAutoStart;
         private Button btnSave;
         private Button btnCancel;
         private GroupBox grpLocation;
         private GroupBox grpPassword;
+        private GroupBox grpAutoStart;
 
         public string Location { get; private set; }
         public string NewPassword { get; private set; }
         public bool PasswordChanged { get; private set; }
+        public bool AutoStartEnabled { get; private set; }
 
         public SettingsDialog()
         {
@@ -27,7 +30,7 @@ namespace WatermarkApp
         private void InitializeComponent()
         {
             this.Text = "水印设置";
-            this.Size = new Size(450, 350);
+            this.Size = new Size(450, 420);
             this.StartPosition = FormStartPosition.CenterScreen;
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
@@ -46,10 +49,23 @@ namespace WatermarkApp
             txtLocation.Size = new Size(370, 25);
             grpLocation.Controls.Add(txtLocation);
 
+            // 开机自启组
+            grpAutoStart = new GroupBox();
+            grpAutoStart.Text = "开机自启";
+            grpAutoStart.Location = new Point(20, 110);
+            grpAutoStart.Size = new Size(400, 55);
+            this.Controls.Add(grpAutoStart);
+
+            chkAutoStart = new CheckBox();
+            chkAutoStart.Text = "开机自动启动水印程序";
+            chkAutoStart.Location = new Point(15, 25);
+            chkAutoStart.Size = new Size(370, 20);
+            grpAutoStart.Controls.Add(chkAutoStart);
+
             // 修改密码组
             grpPassword = new GroupBox();
             grpPassword.Text = "修改密码（留空表示不修改）";
-            grpPassword.Location = new Point(20, 110);
+            grpPassword.Location = new Point(20, 175);
             grpPassword.Size = new Size(400, 130);
             this.Controls.Add(grpPassword);
 
@@ -80,14 +96,14 @@ namespace WatermarkApp
             // 按钮
             btnSave = new Button();
             btnSave.Text = "保存";
-            btnSave.Location = new Point(230, 260);
+            btnSave.Location = new Point(230, 325);
             btnSave.Size = new Size(80, 35);
             btnSave.Click += BtnSave_Click;
             this.Controls.Add(btnSave);
 
             btnCancel = new Button();
             btnCancel.Text = "取消";
-            btnCancel.Location = new Point(330, 260);
+            btnCancel.Location = new Point(330, 325);
             btnCancel.Size = new Size(80, 35);
             btnCancel.Click += BtnCancel_Click;
             this.Controls.Add(btnCancel);
@@ -99,6 +115,7 @@ namespace WatermarkApp
         private void LoadCurrentSettings()
         {
             txtLocation.Text = ConfigManager.GetLocation();
+            chkAutoStart.Checked = ConfigManager.GetAutoStart();
         }
 
         private void BtnSave_Click(object sender, EventArgs e)
@@ -112,6 +129,7 @@ namespace WatermarkApp
             }
 
             Location = txtLocation.Text.Trim();
+            AutoStartEnabled = chkAutoStart.Checked;
 
             // 验证密码
             if (!string.IsNullOrEmpty(txtNewPassword.Text))
