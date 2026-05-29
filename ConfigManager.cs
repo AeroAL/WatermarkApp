@@ -105,5 +105,87 @@ namespace WatermarkApp
                 return sb.ToString();
             }
         }
+
+        public static bool SaveLocation(string location)
+        {
+            try
+            {
+                if (!File.Exists(configFilePath))
+                {
+                    CreateDefaultConfig();
+                }
+
+                string[] lines = File.ReadAllLines(configFilePath, Encoding.UTF8);
+                StringBuilder sb = new StringBuilder();
+                bool locationFound = false;
+
+                foreach (string line in lines)
+                {
+                    if (line.StartsWith("Location="))
+                    {
+                        sb.AppendLine($"Location={location}");
+                        locationFound = true;
+                    }
+                    else
+                    {
+                        sb.AppendLine(line);
+                    }
+                }
+
+                if (!locationFound)
+                {
+                    sb.AppendLine($"Location={location}");
+                }
+
+                File.WriteAllText(configFilePath, sb.ToString(), Encoding.UTF8);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"保存位置信息失败：{ex.Message}", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
+            }
+        }
+
+        public static bool SavePassword(string newPassword)
+        {
+            try
+            {
+                if (!File.Exists(configFilePath))
+                {
+                    CreateDefaultConfig();
+                }
+
+                string[] lines = File.ReadAllLines(configFilePath, Encoding.UTF8);
+                StringBuilder sb = new StringBuilder();
+                bool passwordFound = false;
+
+                foreach (string line in lines)
+                {
+                    if (line.StartsWith("Password="))
+                    {
+                        sb.AppendLine($"Password={EncryptPassword(newPassword)}");
+                        passwordFound = true;
+                    }
+                    else
+                    {
+                        sb.AppendLine(line);
+                    }
+                }
+
+                if (!passwordFound)
+                {
+                    sb.AppendLine($"Password={EncryptPassword(newPassword)}");
+                }
+
+                File.WriteAllText(configFilePath, sb.ToString(), Encoding.UTF8);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"保存密码失败：{ex.Message}", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
+            }
+        }
     }
 }

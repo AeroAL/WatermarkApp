@@ -80,6 +80,8 @@ namespace WatermarkApp
         {
             // 创建托盘菜单
             trayMenu = new ContextMenuStrip();
+            trayMenu.Items.Add("设置", null, OnSettingsClick);
+            trayMenu.Items.Add("-"); // 分隔线
             trayMenu.Items.Add("退出水印", null, OnExitClick);
             trayMenu.Items.Add("关于", null, OnAboutClick);
 
@@ -193,6 +195,40 @@ namespace WatermarkApp
                 "关于",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Information);
+        }
+
+        private void OnSettingsClick(object sender, EventArgs e)
+        {
+            // 先验证密码
+            using (PasswordDialog passwordDialog = new PasswordDialog())
+            {
+                passwordDialog.Message = "请输入密码以进入设置：";
+                if (passwordDialog.ShowDialog() != DialogResult.OK)
+                {
+                    return; // 密码验证失败，不打开设置
+                }
+            }
+
+            // 密码验证成功，打开设置对话框
+            using (SettingsDialog settingsDialog = new SettingsDialog())
+            {
+                if (settingsDialog.ShowDialog() == DialogResult.OK)
+                {
+                    // 保存位置信息
+                    ConfigManager.SaveLocation(settingsDialog.Location);
+
+                    // 如果修改了密码，保存新密码
+                    if (settingsDialog.PasswordChanged)
+                    {
+                        ConfigManager.SavePassword(settingsDialog.NewPassword);
+                    }
+
+                    // 刷新水印显示
+                    UpdateWatermarkText();
+
+                    MessageBox.Show("设置已保存！", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+            }
         }
 
         protected override void OnFormClosing(FormClosingEventArgs e)

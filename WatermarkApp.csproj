@@ -41,6 +41,7 @@
     <Compile Include="MainForm.cs" />
     <Compile Include="PasswordDialog.cs" />
     <Compile Include="Program.cs" />
+    <Compile Include="SettingsDialog.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="config.ini">
