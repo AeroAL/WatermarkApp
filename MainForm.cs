@@ -41,6 +41,17 @@ namespace WatermarkApp
             refreshTimer.Start();
         }
 
+        // 关键：在窗口创建时设置分层样式
+        protected override CreateParams CreateParams
+        {
+            get
+            {
+                CreateParams cp = base.CreateParams;
+                cp.ExStyle |= WS_EX_LAYERED | WS_EX_TRANSPARENT;
+                return cp;
+            }
+        }
+
         private void InitializeComponent()
         {
             // 窗口设置
@@ -48,20 +59,21 @@ namespace WatermarkApp
             this.WindowState = FormWindowState.Maximized;
             this.TopMost = true;
             this.ShowInTaskbar = false;
-            this.BackColor = Color.Magenta;
-            this.TransparencyKey = Color.Magenta;
             this.DoubleBuffered = true;
-
-            // 窗口穿透
-            this.Load += MainForm_Load;
+            this.StartPosition = FormStartPosition.Manual;
+            this.Bounds = Screen.PrimaryScreen.Bounds;
         }
 
-        private void MainForm_Load(object sender, EventArgs e)
+        protected override void OnLoad(EventArgs e)
         {
+            base.OnLoad(e);
+
+            // 设置窗口完全透明（alpha=255 表示不透明，但因为我们是分层窗口，背景透明）
+            SetLayeredWindowAttributes(this.Handle, 0, 255, LWA_ALPHA);
+
             // 设置窗口穿透
             int style = GetWindowLong(this.Handle, GWL_EXSTYLE);
-            SetWindowLong(this.Handle, GWL_EXSTYLE, style | WS_EX_TRANSPARENT | WS_EX_LAYERED);
-            SetLayeredWindowAttributes(this.Handle, 0, 255, LWA_ALPHA);
+            SetWindowLong(this.Handle, GWL_EXSTYLE, style | WS_EX_TRANSPARENT);
         }
 
         private void SetupTrayIcon()
@@ -93,7 +105,9 @@ namespace WatermarkApp
 
         protected override void OnPaint(PaintEventArgs e)
         {
-            base.OnPaint(e);
+            // 不调用 base.OnPaint，避免绘制背景
+            // 清除背景（完全透明）
+            e.Graphics.Clear(Color.Transparent);
 
             if (string.IsNullOrEmpty(watermarkText))
                 return;
@@ -107,7 +121,7 @@ namespace WatermarkApp
 
             // 绘制平铺水印
             using (Font font = new Font("微软雅黑", 18, FontStyle.Bold))
-            using (Brush textBrush = new SolidBrush(Color.FromArgb(25, 200, 200, 200)))
+            using (Brush textBrush = new SolidBrush(Color.FromArgb(80, 0, 0, 0))) // 半透明黑色
             {
                 // 计算文字尺寸
                 SizeF textSize = g.MeasureString(watermarkText, font);
