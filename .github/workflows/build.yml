@@ -13,7 +13,7 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Setup MSBuild
       uses: microsoft/setup-msbuild@v1
@@ -52,14 +52,14 @@ jobs:
         ISCC.exe setup_modified.iss
 
     - name: Upload Installer
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: WatermarkApp-Setup
         path: Output/WatermarkApp_Setup.exe
         if-no-files-found: error
 
     - name: Upload Debug Build
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: WatermarkApp-Debug
         path: |
